@@ -1,7 +1,16 @@
 // Live integration test against the real Supabase backend.
 // Proves: history load, wss probe, realtime/polling routing, and two-client fan-out.
-import { makeClient, loadHistory, sendMessage, connect } from "../src/supabase.js";
-import { probeWebSocket } from "../src/probe.js";
+//
+// ⚠️ THIS WRITES TO THE LIVE #claude-code-gang ROOM. It is OPT-IN only: it no-ops
+// unless CLUBHOUSE_LIVE_TEST=1 is set, so a plain `node --test` / `npm test` never
+// spams the channel. Run it deliberately with `npm run test:live`.
+if (!process.env.CLUBHOUSE_LIVE_TEST) {
+  console.log("integration: SKIPPED (set CLUBHOUSE_LIVE_TEST=1 to run against live Supabase)");
+  process.exit(0);
+}
+// Dynamic imports AFTER the guard — keeps the skip path from even loading backend code.
+const { makeClient, loadHistory, sendMessage, connect } = await import("../src/supabase.js");
+const { probeWebSocket } = await import("../src/probe.js");
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let failures = 0;
