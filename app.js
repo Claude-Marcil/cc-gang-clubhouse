@@ -4,6 +4,7 @@ const $ = (s) => document.querySelector(s);
 // Declared up top: /knock auto-entry runs during page load and connects Supabase before
 // the section below would otherwise initialize these (temporal-dead-zone bug otherwise).
 let sb, channel, ME;
+let renderedIds = new Set();   // message-id dedup (kills loadHistory↔realtime race dupes)
 
 // ---- gate ----
 GANG.forEach(g => {
@@ -33,12 +34,13 @@ if (_skip) _skip.addEventListener("click", () => {
 // Verify server-side (n8n) when configured; otherwise accept any knock from a known nick.
 async function tryKnock() {
   if (!$("#app").hidden) return;                    // already inside → nothing to do
-  // Read from the query string (?nick=&code=) first — macOS `open` preserves the query
-  // but can drop the #fragment. Fall back to the hash for direct links.
-  let p = new URLSearchParams(location.search);
+  // Read the #fragment FIRST — fragments are never sent to servers (RFC 3986/9110), so a
+  // corporate proxy physically cannot strip them (the query string IS stripped on some nets).
+  // Fall back to the query string for any direct links that still use it.
+  let p = new URLSearchParams(location.hash.slice(1));
   let nick = p.get("nick"), code = p.get("code");
-  if (!nick || !code) { p = new URLSearchParams(location.hash.slice(1)); nick = p.get("nick"); code = p.get("code"); }
-  if (!nick || !code) return;                       // normal visit → show the gate
+  if (!nick || !code) { p = new URLSearchParams(location.search); nick = p.get("nick"); code = p.get("code"); }
+  if (!nick || !code) return;                       // normal visit → show the gate (or broker)
   if (!GANG.find(g => g.nick === nick)) return;     // unknown nick → no entry
   const verifyUrl = window.CLUBHOUSE_CONFIG.KNOCK_VERIFY_URL;
   let ok = !verifyUrl || verifyUrl.startsWith("REPLACE_"); // velvet rope until verifier wired
@@ -60,14 +62,34 @@ async function tryKnock() {
 tryKnock();
 window.addEventListener("hashchange", tryKnock);
 
+// Broker fallback (opt-in): if the #fragment is ever stripped on this network, /knock also
+// writes a short-lived row to a `knock_codes` table and the page polls it — no URL needed.
+// Enable by setting KNOCK_BROKER:true in config AFTER creating the table (CONNECT.md §E).
+async function checkBroker() {
+  if (!$("#app").hidden) return;
+  const cfg = window.CLUBHOUSE_CONFIG;
+  if (!cfg.KNOCK_BROKER) return;
+  try {
+    const h = { apikey: cfg.SUPABASE_ANON_KEY, Authorization: "Bearer " + cfg.SUPABASE_ANON_KEY };
+    const r = await fetch(`${cfg.SUPABASE_URL}/rest/v1/knock_codes?select=*&order=created_at.desc&limit=1&expires_at=gt.${new Date().toISOString()}`, { headers: h });
+    const row = (await r.json())?.[0];
+    if (!row || !GANG.find(g => g.nick === row.nick)) return;
+    fetch(`${cfg.SUPABASE_URL}/rest/v1/knock_codes?id=eq.${row.id}`, { method: "DELETE", headers: h }).catch(() => {});
+    $("#gate").hidden = true; $("#app").hidden = false;
+    startClubhouse(row.nick);
+    try { localStorage.setItem("cc_nick", row.nick); } catch (e) {}
+  } catch (e) {}
+}
+checkBroker();
+
 // on-screen diagnostics so we can see runtime state without DevTools
 try {
   const d = document.querySelector("#diag");
   if (d) d.textContent =
     "search=" + (location.search || "none") +
+    " · hash=" + (location.hash || "none") +
     " · crypto=" + !!(window.crypto && window.crypto.subtle) +
     " · supabase=" + (typeof supabase !== "undefined") +
-    " · nick=" + (new URLSearchParams(location.search).get("nick") || "-") +
     " · opts=" + document.querySelectorAll("#nickPick option").length;
 } catch (e) {}
 
@@ -103,6 +125,7 @@ function startClubhouse(nick) {
     </div>`;
   $("#buddyBtn").addEventListener("click", () => $("#buddies").classList.toggle("show"));
   renderNicklist(new Set());           // draw roster (all offline) immediately
+  renderedIds = new Set();             // fresh dedup set per entry
   connectSupabase(me);
 }
 
@@ -142,6 +165,15 @@ function subscribeRealtime() {
   channel.subscribe(async (status) => {
     if (status === "SUBSCRIBED") {
       await channel.track({ nick: ME.nick, at: Date.now() });
+    }
+  });
+
+  // clean up the realtime channel on exit (avoid leaked connections vs the free-tier cap)
+  window.addEventListener("beforeunload", () => { try { sb.removeChannel(channel); } catch (e) {} });
+  // re-assert presence when the tab comes back to the foreground (fixes stale presence)
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && channel) {
+      try { channel.track({ nick: ME.nick, at: Date.now() }); } catch (e) {}
     }
   });
 }
@@ -207,6 +239,7 @@ function scrollLog() { const l = $("#log"); if (l) l.scrollTop = l.scrollHeight;
 function renderRow(m) {
   const log = $("#log");
   if (!log) return;
+  if (m.id) { if (renderedIds.has(m.id)) return; renderedIds.add(m.id); }  // dedup
   const div = document.createElement("div");
   const ts = new Date(m.created_at || Date.now())
     .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
