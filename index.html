@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#claude-code-gang</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="gate" class="gate">
+    <div class="gate-card">
+      <div class="logo">3</div>
+      <h1>#claude-code-gang</h1>
+      <p>members only 🌲</p>
+      <select id="nickPick" aria-label="Who are you?"></select>
+      <input id="passInput" type="password" placeholder="club passcode" autocomplete="off">
+      <button id="enterBtn">Enter the clubhouse</button>
+      <p id="gateErr" class="err" hidden>nope. try again.</p>
+    </div>
+  </div>
+
+  <div id="app" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="gang.js"></script>
+  <script src="gate.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
