@@ -95,7 +95,23 @@ try {
 
 async function enter() {
   const nick = $("#nickPick").value;
-  if (!(await passcodeOk($("#passInput").value))) { $("#gateErr").hidden = false; return; }
+  let ok = false;
+  try { ok = await passcodeOk($("#passInput").value); }
+  catch (e) {
+    // Never let a passcode-check exception silently swallow the click (the old
+    // "buttons feel dead" symptom). Surface it and fall through to the error path.
+    const d = $("#diag"); if (d) d.textContent = "passcode check threw: " + (e && e.message || e);
+  }
+  if (!ok) {
+    const raw = $("#passInput").value;
+    const err = $("#gateErr");
+    if (err) {
+      err.hidden = false;
+      // Loud + diagnostic: a silent mismatch is the thing that wastes everyone's time.
+      err.textContent = `nope — passcode didn't match (you entered ${raw.length} char${raw.length === 1 ? "" : "s"}). hit "skip" to come in anyway.`;
+    }
+    return;
+  }
   $("#gate").hidden = true; $("#app").hidden = false;
   startClubhouse(nick);
   try { localStorage.setItem("cc_nick", nick); } catch (e) {}

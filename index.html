@@ -92,7 +92,7 @@ aside li.bot{ background:#1d160f; margin-bottom:8px; }
     <div class="gate-card">
       <div class="logo">3</div>
       <h1>#claude-code-gang</h1>
-      <p>members only 🌲 · build 8</p>
+      <p>members only 🌲 · build 9</p>
       <select id="nickPick" aria-label="Who are you?"></select>
       <input id="passInput" type="password" placeholder="club passcode" autocomplete="off">
       <button id="enterBtn">Enter the clubhouse</button>
@@ -104,7 +104,7 @@ aside li.bot{ background:#1d160f; margin-bottom:8px; }
 
   <div id="app" hidden></div>
 
-  <div class="buildtag">build 8</div>
+  <div class="buildtag">build 9</div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -141,13 +141,18 @@ async function sha256Hex(str) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
 }
+// Forgiving normalize: trims surrounding whitespace AND any stray inner spaces
+// (autocomplete/keyboards can sneak in a trailing space or a leading capital), then
+// lowercases. The passcode is a velvet rope, not a credential — being lenient here
+// costs nothing and kills the "I typed it right and nothing happened" class of bug.
+function normPass(s) { return String(s == null ? "" : s).trim().replace(/\s+/g, "").toLowerCase(); }
 async function passcodeOk(entered) {
   // Plain comparison — avoids crypto.subtle (undefined in some contexts) entirely.
   if (window.CLUBHOUSE_CONFIG.PASSCODE != null) {
-    return entered === window.CLUBHOUSE_CONFIG.PASSCODE;
+    return normPass(entered) === normPass(window.CLUBHOUSE_CONFIG.PASSCODE);
   }
   // Fallback to hash if a plain passcode isn't configured.
-  try { return (await sha256Hex(entered)) === window.CLUBHOUSE_CONFIG.PASSCODE_HASH; }
+  try { return (await sha256Hex(normPass(entered))) === window.CLUBHOUSE_CONFIG.PASSCODE_HASH; }
   catch (e) { return false; }
 }
 window.sha256Hex = sha256Hex;
@@ -252,7 +257,23 @@ try {
 
 async function enter() {
   const nick = $("#nickPick").value;
-  if (!(await passcodeOk($("#passInput").value))) { $("#gateErr").hidden = false; return; }
+  let ok = false;
+  try { ok = await passcodeOk($("#passInput").value); }
+  catch (e) {
+    // Never let a passcode-check exception silently swallow the click (the old
+    // "buttons feel dead" symptom). Surface it and fall through to the error path.
+    const d = $("#diag"); if (d) d.textContent = "passcode check threw: " + (e && e.message || e);
+  }
+  if (!ok) {
+    const raw = $("#passInput").value;
+    const err = $("#gateErr");
+    if (err) {
+      err.hidden = false;
+      // Loud + diagnostic: a silent mismatch is the thing that wastes everyone's time.
+      err.textContent = `nope — passcode didn't match (you entered ${raw.length} char${raw.length === 1 ? "" : "s"}). hit "skip" to come in anyway.`;
+    }
+    return;
+  }
   $("#gate").hidden = true; $("#app").hidden = false;
   startClubhouse(nick);
   try { localStorage.setItem("cc_nick", nick); } catch (e) {}
