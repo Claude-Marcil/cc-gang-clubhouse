@@ -11,8 +11,9 @@ GANG.forEach(g => {
   o.value = g.nick; o.textContent = `${g.nick} (${g.name})`;
   $("#nickPick").appendChild(o);
 });
-// remember last nick
-const lastNick = localStorage.getItem("cc_nick");
+// remember last nick (storage may be unavailable in private mode)
+let lastNick = null;
+try { lastNick = localStorage.getItem("cc_nick"); } catch (e) {}
 if (lastNick) $("#nickPick").value = lastNick;
 
 $("#enterBtn").addEventListener("click", enter);
@@ -43,10 +44,10 @@ async function tryKnock() {
     } catch (e) { ok = false; }
   }
   if (!ok) return;                                  // bad knock → fall through to gate
-  history.replaceState(null, "", location.pathname); // strip the code from the URL bar
-  localStorage.setItem("cc_nick", nick);
   $("#gate").hidden = true; $("#app").hidden = false;
-  startClubhouse(nick);
+  startClubhouse(nick);                             // reveal FIRST — never let storage block entry
+  try { localStorage.setItem("cc_nick", nick); } catch (e) {}   // Safari Private throws; ignore
+  try { history.replaceState(null, "", location.pathname); } catch (e) {}
 }
 tryKnock();
 window.addEventListener("hashchange", tryKnock);
@@ -54,9 +55,9 @@ window.addEventListener("hashchange", tryKnock);
 async function enter() {
   const nick = $("#nickPick").value;
   if (!(await passcodeOk($("#passInput").value))) { $("#gateErr").hidden = false; return; }
-  localStorage.setItem("cc_nick", nick);
   $("#gate").hidden = true; $("#app").hidden = false;
   startClubhouse(nick);
+  try { localStorage.setItem("cc_nick", nick); } catch (e) {}
 }
 
 // ---- channel shell ----
