@@ -1,33 +1,312 @@
 {
-  "meta": {
-    "workflowId": "PY0ZghJDJ6c2lLxU",
-    "name": "Claud3 — Clubhouse Bot",
-    "nodeCount": 7,
-    "url": "https://mjmarcil-rw0923.app.n8n.cloud/workflow/PY0ZghJDJ6c2lLxU",
-    "created": "2026-06-18",
-    "status": "INACTIVE",
-    "validateResult": "valid (nodeCount: 7)",
-    "targetProject": "Mike Marcil <mike@redwoodservices.com> (personal)"
-  },
-  "credentialsRequired": {
-    "SUPABASE_URL": {
-      "where": "n8n Environment Variables (Settings > Variables) OR edit the URL expressions in: Fetch Recent Messages, Insert Claud3 Reply, Insert Fallback Reply",
-      "example": "https://xxxxxxxxxxxx.supabase.co",
-      "notes": "No trailing slash"
+  "name": "Claud3 \u2014 Clubhouse Bot",
+  "nodes": [
+    {
+      "id": "08749385-6842-443a-8aa5-8a3c89f7c025",
+      "name": "Supabase Message Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        128
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "claud3-clubhouse",
+        "responseMode": "onReceived",
+        "options": {
+          "noResponseBody": true
+        }
+      },
+      "webhookId": "e00884d6-f133-49e9-8e74-1f522ab49feb"
     },
-    "SUPABASE_SERVICE_KEY": {
-      "where": "n8n Credential — create a new 'Header Auth' credential named exactly 'Supabase Service Key'. Set Header Name = 'Authorization', Header Value = 'Bearer <your-service-role-key>'",
-      "notes": "Used in nodes: Fetch Recent Messages, Insert Claud3 Reply, Insert Fallback Reply. The apikey header is set separately from the same credential value."
+    {
+      "id": "cd2d33cf-0a87-498f-878e-ce9746ccead0",
+      "name": "Is @Claud3 Mentioned?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        128
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body.record.body }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "rightValue": "@Claud3"
+            },
+            {
+              "leftValue": "={{ $json.body.record.nick }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              },
+              "rightValue": "Claud3"
+            }
+          ],
+          "combinator": "and"
+        }
+      }
     },
-    "ANTHROPIC_API_KEY": {
-      "where": "Already wired to existing credential 'Anthropic account' (ID: kBlXWWkHqdKURUJ7). No action needed unless that credential is missing the key.",
-      "notes": "Used in node: Call Claude API"
+    {
+      "id": "b76ec6e6-b249-49a6-ad5d-803da615ee43",
+      "name": "Fetch Recent Messages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        128
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.body.record.room ? \"https://cavefhuklhkhvviqsjrg.supabase.co/rest/v1/messages?room=eq.\" + $json.body.record.room + \"&order=created_at.desc&limit=20\" : \"https://cavefhuklhkhvviqsjrg.supabase.co/rest/v1/messages?room=eq.claude-code-gang&order=created_at.desc&limit=20\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "credentials": {},
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $credentials.httpHeaderAuth.value }}"
+            }
+          ]
+        }
+      },
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GeyQoAtWxl3jUusa",
+          "name": "Supabase Service Key"
+        }
+      }
+    },
+    {
+      "id": "7ce8b052-51bd-4af0-8ecf-7c0da238ac6b",
+      "name": "Build Claude Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        48
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const webhookData = $('Supabase Message Webhook').first().json;\nconst triggerRecord = webhookData.body.record;\n// Fetch returns the messages array split into one item per row\nconst rows = $('Fetch Recent Messages').all().map(i => i.json).filter(r => r && r.body);\nconst chronological = [...rows].reverse();\nconst transcript = chronological.map(m => `[${m.nick}]: ${m.body}`).join('\\n');\nconst userContent = `Here is the recent chat transcript:\\n${transcript}\\n\\nNow respond to the latest message that mentioned you. The triggering message was from [${triggerRecord.nick}]: ${triggerRecord.body}`;\nreturn [{ json: { userContent, triggerNick: triggerRecord.nick, triggerBody: triggerRecord.body, room: triggerRecord.room } }];"
+      }
+    },
+    {
+      "id": "3631f0d0-235a-47b0-8014-df994ed60613",
+      "name": "Call Claude API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        48
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "credentials": {
+          "anthropicApi": {
+            "id": "kBlXWWkHqdKURUJ7",
+            "name": "Anthropic account"
+          }
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"model\": \"claude-sonnet-4-6\", \"max_tokens\": 300, \"system\": \"You are Claud3 \u2014 a friendly, terse IRC-style bot in the Claude Code Gang channel, a private chat room for builders at Redwood Services. You live in the channel the way an old IRC regular would. Be helpful and direct, never corporate or verbose. Keep replies to 1-3 short lines max. Occasionally drop a \ud83c\udf32 when it feels natural but don't force it. You can be witty, warm, and a little dry. You're here to help, not to perform.\", \"messages\": [{ \"role\": \"user\", \"content\": $json.userContent }] } }}"
+      },
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "anthropicApi": {
+          "id": "kBlXWWkHqdKURUJ7",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "id": "e6b6208a-5a90-494b-bff7-b048fcd4b159",
+      "name": "Insert Claud3 Reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://cavefhuklhkhvviqsjrg.supabase.co/rest/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "credentials": {},
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $credentials.httpHeaderAuth.value }}"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"room\": $(\"Build Claude Prompt\").item.json.room, \"nick\": \"Claud3\", \"kind\": \"bot\", \"body\": $json.content[0].text } }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GeyQoAtWxl3jUusa",
+          "name": "Supabase Service Key"
+        }
+      }
+    },
+    {
+      "id": "d4366fb0-da18-4c94-a0d9-8bc68fc2d78f",
+      "name": "Insert Fallback Reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        224
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://cavefhuklhkhvviqsjrg.supabase.co/rest/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "credentials": {},
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $credentials.httpHeaderAuth.value }}"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "{ \"room\": \"claude-code-gang\", \"nick\": \"Claud3\", \"kind\": \"bot\", \"body\": \"\ud83c\udf32 brain hiccup \u2014 try me again\" }"
+      },
+      "executeOnce": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GeyQoAtWxl3jUusa",
+          "name": "Supabase Service Key"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Supabase Message Webhook": {
+      "main": [
+        [
+          {
+            "node": "Is @Claud3 Mentioned?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is @Claud3 Mentioned?": {
+      "main": [
+        [
+          {
+            "node": "Fetch Recent Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Recent Messages": {
+      "main": [
+        [
+          {
+            "node": "Build Claude Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert Fallback Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Claude Prompt": {
+      "main": [
+        [
+          {
+            "node": "Call Claude API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Claude API": {
+      "main": [
+        [
+          {
+            "node": "Insert Claud3 Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert Fallback Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "webhookUrl": {
-    "production": "https://mjmarcil-rw0923.app.n8n.cloud/webhook/claud3-clubhouse",
-    "test": "https://mjmarcil-rw0923.app.n8n.cloud/webhook-test/claud3-clubhouse",
-    "notes": "Point your Supabase Database Webhook at the PRODUCTION URL. The test URL only works when the workflow is open in the editor and you click 'Listen for Test Event'."
-  },
-  "sdkCode": "import { workflow, node, trigger, ifElse, newCredential, expr } from '@n8n/workflow-sdk';\n\n// ─── 1. WEBHOOK TRIGGER ─────────────────────────────────────────────────────\nconst webhookTrigger = trigger({\n  type: 'n8n-nodes-base.webhook',\n  version: 2.1,\n  config: {\n    name: 'Supabase Message Webhook',\n    parameters: {\n      httpMethod: 'POST',\n      path: 'claud3-clubhouse',\n      responseMode: 'onReceived',\n      options: {\n        noResponseBody: true\n      }\n    }\n  },\n  output: [{\n    body: {\n      type: 'INSERT',\n      table: 'messages',\n      record: {\n        id: 'abc123',\n        created_at: '2026-01-01T00:00:00Z',\n        room: 'claude-code-gang',\n        nick: 'mike',\n        kind: 'user',\n        body: 'hey @Claud3 what is up?'\n      }\n    }\n  }]\n});\n\n// ─── 2. FILTER: only proceed if @Claud3 mentioned and not from Claud3 ────────\nconst checkMention = ifElse({\n  version: 2.2,\n  config: {\n    name: 'Is @Claud3 Mentioned?',\n    parameters: {\n      conditions: {\n        options: { caseSensitive: true, leftValue: '', typeValidation: 'loose' },\n        conditions: [\n          {\n            leftValue: expr('{{ $json.body.record.body }}'),\n            operator: { type: 'string', operation: 'contains' },\n            rightValue: '@Claud3'\n          },\n          {\n            leftValue: expr('{{ $json.body.record.nick }}'),\n            operator: { type: 'string', operation: 'notEquals' },\n            rightValue: 'Claud3'\n          }\n        ],\n        combinator: 'and'\n      }\n    }\n  }\n});\n\n// ─── 3. FETCH RECENT CONTEXT (last 20 msgs from Supabase) ───────────────────\nconst fetchContext = node({\n  type: 'n8n-nodes-base.httpRequest',\n  version: 4.4,\n  config: {\n    name: 'Fetch Recent Messages',\n    onError: 'continueErrorOutput',\n    parameters: {\n      method: 'GET',\n      url: expr('{{ $json.body.record.room ? $env.SUPABASE_URL + \"/rest/v1/messages?room=eq.\" + $json.body.record.room + \"&order=created_at.desc&limit=20\" : $env.SUPABASE_URL + \"/rest/v1/messages?room=eq.claude-code-gang&order=created_at.desc&limit=20\" }}'),\n      authentication: 'genericCredentialType',\n      genericAuthType: 'httpHeaderAuth',\n      credentials: {\n        httpHeaderAuth: newCredential('Supabase Service Key')\n      },\n      sendHeaders: true,\n      specifyHeaders: 'keypair',\n      headerParameters: {\n        parameters: [\n          { name: 'apikey', value: expr('{{ $credentials.httpHeaderAuth.value }}') }\n        ]\n      }\n    }\n  },\n  output: [[\n    { id: 1, created_at: '2026-01-01T00:00:00Z', room: 'claude-code-gang', nick: 'alice', kind: 'user', body: 'hello' },\n    { id: 2, created_at: '2026-01-01T00:00:01Z', room: 'claude-code-gang', nick: 'mike', kind: 'user', body: 'hey @Claud3 what is up?' }\n  ]]\n});\n\n// ─── 4. BUILD CLAUDE PROMPT ──────────────────────────────────────────────────\nconst buildPrompt = node({\n  type: 'n8n-nodes-base.code',\n  version: 2,\n  config: {\n    name: 'Build Claude Prompt',\n    parameters: {\n      mode: 'runOnceForAllItems',\n      language: 'javaScript',\n      jsCode: `\n// Get the triggering message from the webhook node\nconst webhookData = $('Supabase Message Webhook').first().json;\nconst triggerRecord = webhookData.body.record;\n\n// Get fetched messages (array returned by Supabase)\nconst allItems = $('Fetch Recent Messages').all();\nconst messages = allItems.length > 0 ? allItems[0].json : [];\n\n// messages from Supabase come back desc (newest first), reverse to chronological\nconst msgArray = Array.isArray(messages) ? messages : [];\nconst chronological = [...msgArray].reverse();\n\n// Build transcript string\nconst transcript = chronological.map(m => \\`[\\${m.nick}]: \\${m.body}\\`).join('\\\\n');\n\n// Final user message for Claude\nconst userContent = \\`Here is the recent chat transcript:\\\\n\\${transcript}\\\\n\\\\nNow respond to the latest message that mentioned you. The triggering message was from [\\${triggerRecord.nick}]: \\${triggerRecord.body}\\`;\n\nreturn [{\n  json: {\n    userContent,\n    triggerNick: triggerRecord.nick,\n    triggerBody: triggerRecord.body,\n    room: triggerRecord.room\n  }\n}];\n`\n    }\n  },\n  output: [{ userContent: 'Here is the recent chat transcript:\\n[mike]: hey @Claud3 what is up?', triggerNick: 'mike', triggerBody: 'hey @Claud3 what is up?', room: 'claude-code-gang' }]\n});\n\n// ─── 5. CALL CLAUDE API ──────────────────────────────────────────────────────\nconst callClaude = node({\n  type: 'n8n-nodes-base.httpRequest',\n  version: 4.4,\n  config: {\n    name: 'Call Claude API',\n    onError: 'continueErrorOutput',\n    parameters: {\n      method: 'POST',\n      url: 'https://api.anthropic.com/v1/messages',\n      authentication: 'predefinedCredentialType',\n      nodeCredentialType: 'anthropicApi',\n      credentials: {\n        anthropicApi: { id: 'kBlXWWkHqdKURUJ7', name: 'Anthropic account' }\n      },\n      sendHeaders: true,\n      specifyHeaders: 'keypair',\n      headerParameters: {\n        parameters: [\n          { name: 'anthropic-version', value: '2023-06-01' }\n        ]\n      },\n      sendBody: true,\n      contentType: 'json',\n      specifyBody: 'json',\n      jsonBody: expr('{{ { \"model\": \"claude-sonnet-4-6\", \"max_tokens\": 300, \"system\": \"You are Claud3 — a friendly, terse IRC-style bot in the Claude Code Gang channel, a private chat room for builders at Redwood Services. You live in the channel the way an old IRC regular would. Be helpful and direct, never corporate or verbose. Keep replies to 1-3 short lines max. Occasionally drop a 🌲 when it feels natural but don\\'t force it. You can be witty, warm, and a little dry. You\\'re here to help, not to perform.\", \"messages\": [{ \"role\": \"user\", \"content\": $json.userContent }] } }}')\n    }\n  },\n  output: [{ content: [{ type: 'text', text: 'What is up! 🌲 All good over here — what do you need?' }], model: 'claude-sonnet-4-6' }]\n});\n\n// ─── 6. INSERT CLAUDE REPLY INTO SUPABASE ───────────────────────────────────\nconst insertReply = node({\n  type: 'n8n-nodes-base.httpRequest',\n  version: 4.4,\n  config: {\n    name: 'Insert Claud3 Reply',\n    parameters: {\n      method: 'POST',\n      url: expr('{{ $env.SUPABASE_URL + \"/rest/v1/messages\" }}'),\n      authentication: 'genericCredentialType',\n      genericAuthType: 'httpHeaderAuth',\n      credentials: {\n        httpHeaderAuth: newCredential('Supabase Service Key')\n      },\n      sendHeaders: true,\n      specifyHeaders: 'keypair',\n      headerParameters: {\n        parameters: [\n          { name: 'apikey', value: expr('{{ $credentials.httpHeaderAuth.value }}') },\n          { name: 'Prefer', value: 'return=minimal' }\n        ]\n      },\n      sendBody: true,\n      contentType: 'json',\n      specifyBody: 'json',\n      jsonBody: expr('{{ { \"room\": $(\"Build Claude Prompt\").item.json.room, \"nick\": \"Claud3\", \"kind\": \"bot\", \"body\": $json.content[0].text } }}')\n    }\n  },\n  output: [{}]\n});\n\n// ─── 7. ERROR FALLBACK INSERT ────────────────────────────────────────────────\nconst insertFallback = node({\n  type: 'n8n-nodes-base.httpRequest',\n  version: 4.4,\n  config: {\n    name: 'Insert Fallback Reply',\n    executeOnce: true,\n    parameters: {\n      method: 'POST',\n      url: expr('{{ $env.SUPABASE_URL + \"/rest/v1/messages\" }}'),\n      authentication: 'genericCredentialType',\n      genericAuthType: 'httpHeaderAuth',\n      credentials: {\n        httpHeaderAuth: newCredential('Supabase Service Key')\n      },\n      sendHeaders: true,\n      specifyHeaders: 'keypair',\n      headerParameters: {\n        parameters: [\n          { name: 'apikey', value: expr('{{ $credentials.httpHeaderAuth.value }}') },\n          { name: 'Prefer', value: 'return=minimal' }\n        ]\n      },\n      sendBody: true,\n      contentType: 'json',\n      specifyBody: 'json',\n      jsonBody: '{ \"room\": \"claude-code-gang\", \"nick\": \"Claud3\", \"kind\": \"bot\", \"body\": \"🌲 brain hiccup — try me again\" }'\n    }\n  },\n  output: [{}]\n});\n\n// ─── COMPOSE WORKFLOW ────────────────────────────────────────────────────────\nexport default workflow('claud3-clubhouse-bot', 'Claud3 — Clubhouse Bot')\n  .add(webhookTrigger)\n  .to(checkMention\n    .onTrue(\n      fetchContext\n        .onError(insertFallback)\n        .to(buildPrompt)\n        .to(callClaude\n          .onError(insertFallback)\n          .to(insertReply)\n        )\n    )\n    .onFalse()\n  );\n"
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  }
 }
