@@ -35,6 +35,8 @@ cross-platform (Node — so **Brooke on PC works too**, no Mac-only anything).
 - ✅ Terminal: 2-client realtime fan-out + presence, **against live Supabase**
 - ✅ Terminal: 10/10 pure-logic unit tests (commands, render, trivia)
 - ✅ Web build 8: fragment auto-entry, presence, dedup, in a clean browser
+- ✅ **Cross-surface interop:** a message sent from the *terminal* client showed up in the
+  *web* clubhouse — both surfaces share one live channel
 - ✅ `/knock` Node launcher runs on this machine; installed to your skills dir
 - ⏳ Can't verify from here (needs *your* network): whether Redwood passes the `#fragment`.
   The build-8 diag line on the gate now shows `hash=…` — if you ever see the gate *with* a

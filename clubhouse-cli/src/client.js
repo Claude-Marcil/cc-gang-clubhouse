@@ -103,7 +103,9 @@ export async function run() {
   rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const prompt = () => { rl.setPrompt(`${colorFor(ME)}<${ME}>${C.reset} `); rl.prompt(); };
 
+  let lastSend = Promise.resolve();
   const cleanup = async () => {
+    try { await lastSend; } catch {}          // flush any in-flight message before exit
     out(`\n${C.canopy}see you in the grove 🌲${C.reset}`);
     try { await teardown(); } catch {}
     try { rl.close(); } catch {}
@@ -127,7 +129,8 @@ export async function run() {
       }
       return prompt();
     }
-    const err = await sendMessage(sb, ME, text);
+    lastSend = sendMessage(sb, ME, text);
+    const err = await lastSend;
     if (err) showLater(`${C.err}message failed — ${err.message}${C.reset}`);
     prompt();
   });
