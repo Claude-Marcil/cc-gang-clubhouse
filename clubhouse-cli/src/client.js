@@ -113,6 +113,14 @@ export async function run() {
   };
 
   rl.on("line", async (line) => {
+    // mIRC feel: erase the raw line the terminal just echoed, so the message only
+    // appears ONCE — as the formatted <nick> row that round-trips back. Without this,
+    // your typed text lingers above the rendered row and looks like a double/echo.
+    if (process.stdout.isTTY) {
+      readline.moveCursor(process.stdout, 0, -1);
+      readline.clearLine(process.stdout, 0);
+      readline.cursorTo(process.stdout, 0);
+    }
     const text = line.trim();
     if (!text) return prompt();
     const parsed = parseInput(text);

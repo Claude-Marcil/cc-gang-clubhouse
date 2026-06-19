@@ -7,7 +7,7 @@ export const TRIVIA = [
   { q: "Redwood's 4 PSC values: Proactive, Collaborative, Adaptive, and ____?", a: "tenacious" },
   { q: "What ServiceTitan metric counts a job as converted only at the sold threshold?", a: "opp given" },
   { q: "Redwood's quarterly company magazine is called 'Branching ____.'", a: "out" },
-  { q: "'16 partner companies… 1 Redwood ____.'", a: "nation" },
+  { q: "'22 partner companies… 1 Redwood ____.'", a: "nation" },
   { q: "Which warehouse tool is nicknamed 'Canopy' internally?", a: "snowflake" },
 ];
 
