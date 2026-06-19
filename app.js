@@ -16,8 +16,10 @@ $("#passInput").addEventListener("keydown", e => { if (e.key === "Enter") enter(
 
 // ---- /knock auto-entry (terminal-only door) ----
 // If the page was opened by the `/knock` CLI command, it carries #nick=&code=.
+// Runs on load AND on hashchange, so /knock works even when the tab is already open.
 // Verify server-side (n8n) when configured; otherwise accept any knock from a known nick.
-(async function checkKnock() {
+async function tryKnock() {
+  if (!$("#app").hidden) return;                    // already inside → nothing to do
   const h = new URLSearchParams(location.hash.slice(1));
   const nick = h.get("nick"), code = h.get("code");
   if (!nick || !code) return;                       // normal visit → show the gate
@@ -38,7 +40,9 @@ $("#passInput").addEventListener("keydown", e => { if (e.key === "Enter") enter(
   localStorage.setItem("cc_nick", nick);
   $("#gate").hidden = true; $("#app").hidden = false;
   startClubhouse(nick);
-})();
+}
+tryKnock();
+window.addEventListener("hashchange", tryKnock);
 
 async function enter() {
   const nick = $("#nickPick").value;
