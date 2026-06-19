@@ -17,9 +17,15 @@ t("/trivia is a recognized command", () => {
   const r = parseInput("/trivia");
   assert.equal(r.type, "command"); assert.equal(r.name, "trivia");
 });
-t("/quit recognized; unknown /foo falls through to message", () => {
+t("/quit recognized; unknown /foo is 'unknown' (NOT broadcast)", () => {
   assert.equal(parseInput("/quit").type, "command");
-  assert.equal(parseInput("/foo bar").type, "message");
+  const u = parseInput("/foo bar");
+  assert.equal(u.type, "unknown"); assert.equal(u.name, "foo");
+});
+t("aliases resolve: /exit and /q -> quit, /? -> help", () => {
+  assert.equal(parseInput("/exit").name, "quit");
+  assert.equal(parseInput("/q").name, "quit");
+  assert.equal(parseInput("/?").name, "help");
 });
 t("command args captured", () => {
   assert.equal(parseInput("/who extra").args, "extra");

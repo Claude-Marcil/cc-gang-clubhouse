@@ -137,6 +137,10 @@ export async function run() {
       }
       return prompt();
     }
+    if (parsed.type === "unknown") {
+      showLater(`${C.dim}unknown command: /${parsed.name} — try ${C.coral}/help${C.reset}`);
+      return prompt();
+    }
     lastSend = sendMessage(sb, ME, text);
     const err = await lastSend;
     if (err) showLater(`${C.err}message failed — ${err.message}${C.reset}`);
