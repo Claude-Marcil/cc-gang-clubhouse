@@ -1,8 +1,8 @@
 // PLACEHOLDER config — the page loads but won't connect until real values are filled in.
 // See CONNECT.md (≈5 min). The anon key is public by design; passcode stored only as a hash.
 window.CLUBHOUSE_CONFIG = {
-  SUPABASE_URL: "https://YOUR-PROJECT.supabase.co",
-  SUPABASE_ANON_KEY: "YOUR-ANON-PUBLIC-KEY",
+  SUPABASE_URL: "https://cavefhuklhkhvviqsjrg.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_ZDaTdOEJE8RTtCurNjWLMg_TKjKZISJ",
   ROOM_SLUG: "claude-code-gang",
   PASSCODE_HASH: "REPLACE_WITH_SHA256_HEX",
   // n8n webhook that verifies a /knock code server-side. Leave as placeholder to accept
