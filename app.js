@@ -109,7 +109,7 @@ function startClubhouse(nick) {
       <div class="logo">3</div>
       <div>
         <h1>#claude-code-gang</h1>
-        <div class="topic">build cool stuff · don't dupe each other's work · Claud3 is listening 🌲</div>
+        <div class="topic">Outstanding Alone. Better Together. · Claud3 is listening 🌲</div>
       </div>
       <button class="buddybtn" id="buddyBtn">buddies</button>
     </header>
