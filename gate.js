@@ -4,7 +4,13 @@ async function sha256Hex(str) {
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
 }
 async function passcodeOk(entered) {
-  return (await sha256Hex(entered)) === window.CLUBHOUSE_CONFIG.PASSCODE_HASH;
+  // Plain comparison — avoids crypto.subtle (undefined in some contexts) entirely.
+  if (window.CLUBHOUSE_CONFIG.PASSCODE != null) {
+    return entered === window.CLUBHOUSE_CONFIG.PASSCODE;
+  }
+  // Fallback to hash if a plain passcode isn't configured.
+  try { return (await sha256Hex(entered)) === window.CLUBHOUSE_CONFIG.PASSCODE_HASH; }
+  catch (e) { return false; }
 }
 window.sha256Hex = sha256Hex;
 window.passcodeOk = passcodeOk;

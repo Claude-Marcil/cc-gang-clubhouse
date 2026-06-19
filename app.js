@@ -19,6 +19,14 @@ if (lastNick) $("#nickPick").value = lastNick;
 $("#enterBtn").addEventListener("click", enter);
 $("#passInput").addEventListener("keydown", e => { if (e.key === "Enter") enter(); });
 
+// escape hatch — enter with no passcode/crypto/params (works if the page loaded at all)
+const _skip = document.querySelector("#skipBtn");
+if (_skip) _skip.addEventListener("click", () => {
+  const nick = $("#nickPick").value || "Marcil";
+  $("#gate").hidden = true; $("#app").hidden = false;
+  startClubhouse(nick);
+});
+
 // ---- /knock auto-entry (terminal-only door) ----
 // If the page was opened by the `/knock` CLI command, it carries #nick=&code=.
 // Runs on load AND on hashchange, so /knock works even when the tab is already open.
@@ -51,6 +59,17 @@ async function tryKnock() {
 }
 tryKnock();
 window.addEventListener("hashchange", tryKnock);
+
+// on-screen diagnostics so we can see runtime state without DevTools
+try {
+  const d = document.querySelector("#diag");
+  if (d) d.textContent =
+    "search=" + (location.search || "none") +
+    " · crypto=" + !!(window.crypto && window.crypto.subtle) +
+    " · supabase=" + (typeof supabase !== "undefined") +
+    " · nick=" + (new URLSearchParams(location.search).get("nick") || "-") +
+    " · opts=" + document.querySelectorAll("#nickPick option").length;
+} catch (e) {}
 
 async function enter() {
   const nick = $("#nickPick").value;

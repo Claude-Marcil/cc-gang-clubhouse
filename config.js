@@ -4,6 +4,7 @@ window.CLUBHOUSE_CONFIG = {
   SUPABASE_URL: "https://cavefhuklhkhvviqsjrg.supabase.co",
   SUPABASE_ANON_KEY: "sb_publishable_ZDaTdOEJE8RTtCurNjWLMg_TKjKZISJ",
   ROOM_SLUG: "claude-code-gang",
+  PASSCODE: "treehouse",   // plain compare (no crypto.subtle dependency)
   PASSCODE_HASH: "dc12c22f0cab5fd6943c2870d9b8eaf55902c02ced0519a66cdb96bc47ac698a",
   // n8n webhook that verifies a /knock code server-side. Leave as placeholder to accept
   // any knock from a known nick (velvet rope); set it to turn the door into a real lock.

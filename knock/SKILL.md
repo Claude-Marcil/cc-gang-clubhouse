@@ -13,8 +13,7 @@ machine. The clubhouse is terminal-only — this is the door.
 Run the knock script (it reads your local profile and opens the browser):
 
 ```bash
-bash "$(dirname "$(command -v knock 2>/dev/null || echo .)")/knock.sh" 2>/dev/null || \
-bash ~/.config/clubhouse/knock.sh
+bash ~/.claude/skills/knock/knock.sh
 ```
 
 If the script reports no profile, tell the user to create one:

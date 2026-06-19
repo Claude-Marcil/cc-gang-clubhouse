@@ -4,7 +4,7 @@ index.html. Single resource => no separate cacheable files to go stale. A visibl
 stamp lets us confirm at a glance whether a browser is on the current version."""
 import pathlib, re
 
-BUILD = "5"
+BUILD = "6"
 here = pathlib.Path(".")
 
 styles = (here / "styles.css").read_text()
@@ -36,6 +36,8 @@ html = f"""<!DOCTYPE html>
       <input id="passInput" type="password" placeholder="club passcode" autocomplete="off">
       <button id="enterBtn">Enter the clubhouse</button>
       <p id="gateErr" class="err" hidden>nope. try again.</p>
+      <button id="skipBtn" style="background:#2a2f38;color:#cbd3dd;margin-top:8px;">skip — just let me in</button>
+      <div id="diag" style="margin-top:14px;font:10px ui-monospace,monospace;color:#566;word-break:break-all;">⚠ script did not run</div>
     </div>
   </div>
 
