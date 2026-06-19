@@ -4,4 +4,4 @@
 
 drop policy if exists "insert messages" on public.messages;
 create policy "insert messages" on public.messages for insert
-  with check (nick in ('Copeland','Weintz','Marcil','Neirgarth','Ramsey','Claud3','system'));
+  with check (nick in ('Copeland','Weintz','Marcil','Niergarth','Ramsey','Claud3','system'));

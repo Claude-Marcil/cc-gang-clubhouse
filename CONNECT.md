@@ -41,5 +41,5 @@ Built (inactive) in n8n: `Claud3 — Clubhouse Bot`
 - Terminal: `cd clubhouse-cli && npm install && npm link` → `clubhouse`.
 - Web: install the `/knock` skill (`cp -r knock ~/.claude/skills/knock`) + create
   `~/.config/clubhouse/profile.json` = `{"nick":"…","secret":"…"}`.
-- Valid nicks: Copeland, Weintz, Marcil, Neirgarth, Ramsey (= Brooke). Shared secret lives at
+- Valid nicks: Copeland, Weintz, Marcil, Niergarth, Ramsey (= Brooke). Shared secret lives at
   `~/.config/clubhouse/club-secret` on the setup machine. 🌲

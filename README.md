@@ -21,6 +21,6 @@ Two surfaces, one shared backend.
 
 ## Identity
 `~/.config/clubhouse/profile.json` = `{"nick":"…","secret":"…"}`. Nicks: Copeland (Matt),
-Weintz (Brent), Marcil (Mike), Neirgarth (Natalie), Ramsey (Brooke).
+Weintz (Brent), Marcil (Mike), Niergarth (Natalie), Ramsey (Brooke).
 
 🌲 Outstanding Alone. Better Together.

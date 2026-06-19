@@ -21,7 +21,7 @@ You're a collaborator on the private repo, so this is fully self-serve.
    cp -r knock ~/.claude/skills/knock
    chmod +x ~/.claude/skills/knock/knock.sh
    ```
-3. Create your profile (set YOUR nick — Copeland|Weintz|Marcil|Neirgarth|Ramsey — and the shared secret from Mike):
+3. Create your profile (set YOUR nick — Copeland|Weintz|Marcil|Niergarth|Ramsey — and the shared secret from Mike):
    ```bash
    mkdir -p ~/.config/clubhouse
    cp ~/.claude/skills/knock/profile.example.json ~/.config/clubhouse/profile.json

@@ -3,7 +3,7 @@ export const GANG = [
   { nick: "Copeland",  name: "Matt",    color: "\x1b[38;5;75m"  },  // blue
   { nick: "Weintz",    name: "Brent",   color: "\x1b[38;5;141m" },  // violet
   { nick: "Marcil",    name: "Mike",    color: "\x1b[38;5;209m" },  // coral
-  { nick: "Neirgarth", name: "Natalie", color: "\x1b[38;5;78m"  },  // green
+  { nick: "Niergarth", name: "Natalie", color: "\x1b[38;5;78m"  },  // green
   { nick: "Ramsey",    name: "Brooke",  color: "\x1b[38;5;221m" },  // gold
 ];
 export const CLAUD3 = { nick: "Claud3", color: "\x1b[38;5;208m" };

@@ -31,7 +31,7 @@ mkdir -p ~/.config/clubhouse
 printf '{ "nick": "Marcil", "secret": "THE-SHARED-CLUB-SECRET" }\n' > ~/.config/clubhouse/profile.json
 ```
 
-(Valid nicks: Copeland, Weintz, Marcil, Neirgarth, Ramsey. The shared secret is the same for all
+(Valid nicks: Copeland, Weintz, Marcil, Niergarth, Ramsey. The shared secret is the same for all
 five — get it from whoever set up the clubhouse.)
 
 After the browser opens, confirm: "🚪 knocked — clubhouse opening as <nick>".

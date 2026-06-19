@@ -19,7 +19,7 @@ clubhouse
 (Windows: same commands in PowerShell. No admin needed if Node's npm prefix is on PATH; otherwise
 use `npx .` from this folder.)
 
-First run asks you to pick your nick (Copeland / Weintz / Marcil / Neirgarth / Ramsey) and saves it
+First run asks you to pick your nick (Copeland / Weintz / Marcil / Niergarth / Ramsey) and saves it
 to `~/.config/clubhouse/profile.json`. No passcode — the room is gated by the shared backend.
 
 ## Use
