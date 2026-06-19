@@ -1,5 +1,13 @@
 # ☀️ Morning handoff — Claude Code Gang Clubhouse
 
+> **UPDATE (2026-06-19, later):** Now **build 10**. The "dead buttons" issue was a **CSS cascade bug**
+> (`.gate{display:grid}` outranked the UA `[hidden]{display:none}`, so the gate never visually
+> dismissed) — fixed with `[hidden]{display:none!important}`. Passcode is now forgiving
+> (trim/case). Terminal client: input-echo fixed (mIRC-style), command aliases (`/exit`→quit etc.),
+> unknown `/cmds` no longer broadcast, trivia partner count 16→**22** (Notion source of truth).
+> The integration test is now gated behind `CLUBHOUSE_LIVE_TEST=1` (`npm test` is offline-only).
+> All 5 gang added as **repo collaborators** (write, pending accept). Onboarding: `knock/README.md`.
+
 **TL;DR: the clubhouse is live and working two ways, both verified against the real backend.
 You can get in right now. A couple of optional 2-minute steps are yours when you want them.**
 
