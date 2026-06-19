@@ -1,0 +1,12 @@
+{
+  "name": "cc-clubhouse",
+  "version": "1.0.0",
+  "description": "Claude Code Gang terminal chat client (mIRC-style)",
+  "type": "module",
+  "bin": { "clubhouse": "./index.js" },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  },
+  "files": ["index.js", "src/"]
+}
