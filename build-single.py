@@ -4,7 +4,7 @@ index.html. Single resource => no separate cacheable files to go stale. A visibl
 stamp lets us confirm at a glance whether a browser is on the current version."""
 import pathlib, re
 
-BUILD = "9"
+BUILD = "10"
 here = pathlib.Path(".")
 
 styles = (here / "styles.css").read_text()

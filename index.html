@@ -11,6 +11,11 @@
   --ink:#d7dde5; --dim:#7b8694; --orange:#ff7a45; --green:#6ee7a8;
 }
 *{ box-sizing:border-box; }
+/* CRITICAL: an author rule like `.gate{display:grid}` or `#app{display:flex}` outranks the
+   browser's built-in `[hidden]{display:none}` (author origin beats UA origin), so toggling
+   the `hidden` attribute in JS would NOT hide these. This makes `hidden` actually hide —
+   without it, the gate overlay never lifts and every button looks dead. Do not remove. */
+[hidden]{ display:none !important; }
 html,body{ margin:0; height:100%; background:var(--bg); color:var(--ink);
   font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace; }
 
@@ -92,7 +97,7 @@ aside li.bot{ background:#1d160f; margin-bottom:8px; }
     <div class="gate-card">
       <div class="logo">3</div>
       <h1>#claude-code-gang</h1>
-      <p>members only 🌲 · build 9</p>
+      <p>members only 🌲 · build 10</p>
       <select id="nickPick" aria-label="Who are you?"></select>
       <input id="passInput" type="password" placeholder="club passcode" autocomplete="off">
       <button id="enterBtn">Enter the clubhouse</button>
@@ -104,7 +109,7 @@ aside li.bot{ background:#1d160f; margin-bottom:8px; }
 
   <div id="app" hidden></div>
 
-  <div class="buildtag">build 9</div>
+  <div class="buildtag">build 10</div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>

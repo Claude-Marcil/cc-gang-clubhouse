@@ -3,6 +3,11 @@
   --ink:#d7dde5; --dim:#7b8694; --orange:#ff7a45; --green:#6ee7a8;
 }
 *{ box-sizing:border-box; }
+/* CRITICAL: an author rule like `.gate{display:grid}` or `#app{display:flex}` outranks the
+   browser's built-in `[hidden]{display:none}` (author origin beats UA origin), so toggling
+   the `hidden` attribute in JS would NOT hide these. This makes `hidden` actually hide —
+   without it, the gate overlay never lifts and every button looks dead. Do not remove. */
+[hidden]{ display:none !important; }
 html,body{ margin:0; height:100%; background:var(--bg); color:var(--ink);
   font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace; }
 
