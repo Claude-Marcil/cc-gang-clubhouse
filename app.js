@@ -20,8 +20,11 @@ $("#passInput").addEventListener("keydown", e => { if (e.key === "Enter") enter(
 // Verify server-side (n8n) when configured; otherwise accept any knock from a known nick.
 async function tryKnock() {
   if (!$("#app").hidden) return;                    // already inside → nothing to do
-  const h = new URLSearchParams(location.hash.slice(1));
-  const nick = h.get("nick"), code = h.get("code");
+  // Read from the query string (?nick=&code=) first — macOS `open` preserves the query
+  // but can drop the #fragment. Fall back to the hash for direct links.
+  let p = new URLSearchParams(location.search);
+  let nick = p.get("nick"), code = p.get("code");
+  if (!nick || !code) { p = new URLSearchParams(location.hash.slice(1)); nick = p.get("nick"); code = p.get("code"); }
   if (!nick || !code) return;                       // normal visit → show the gate
   if (!GANG.find(g => g.nick === nick)) return;     // unknown nick → no entry
   const verifyUrl = window.CLUBHOUSE_CONFIG.KNOCK_VERIFY_URL;

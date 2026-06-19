@@ -18,8 +18,8 @@ secret=$(python3 -c "import json;print(json.load(open('$CFG')).get('secret',''))
 window=$(( $(date +%s) / 300 ))
 code=$(printf '%s' "$window" | openssl dgst -sha256 -hmac "$secret" | sed 's/^.*= *//' | cut -c1-12)
 
-# unique ?k= each knock so the browser loads a FRESH page (macOS `open` otherwise just
-# focuses an already-open tab and never applies the #nick/#code).
-url="${URL_BASE}?k=$(date +%s)#nick=${nick}&code=${code}"
+# Put nick/code in the QUERY string (macOS `open` preserves ?query but can drop #fragment).
+# Unique k= each knock forces a fresh page load instead of focusing an open tab.
+url="${URL_BASE}?nick=${nick}&code=${code}&k=$(date +%s)"
 echo "🚪 knock knock — opening the clubhouse as ${nick}"
 open -a "Google Chrome" "$url" 2>/dev/null || open "$url" 2>/dev/null || xdg-open "$url" 2>/dev/null || echo "open this: $url"
