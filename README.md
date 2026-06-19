@@ -1,20 +1,26 @@
 # Claude Code Gang Clubhouse 🌲
 
-A mIRC-style web chat room for the five Claude Code Gang members, with live AOL-style
-presence and the **Claud3** bot. Exclusive 5-person club.
+A private, mIRC-style chat for the five Claude Code Gang members — "Discord for Claude, mini."
+Two surfaces, one shared backend.
 
-- **Frontend:** static page on GitHub Pages (no build step)
-- **Backbone:** Supabase (realtime messages + presence) — free tier
-- **Claud3 bot:** n8n + Claude API, fires only on `@Claud3` mentions
+- **Web** — https://claude-marcil.github.io/cc-gang-clubhouse/ · open it with `/knock` (auto-enters
+  as you via a proxy-immune URL fragment) or pick your nick + the club passcode.
+- **Terminal** — `clubhouse-cli/` · a Node mIRC client (`clubhouse`) that connects straight to
+  Supabase; realtime with automatic polling fallback. Cross-platform (Mac/Win/Linux).
+- **Backend** — Supabase free tier (messages + RLS + realtime + presence).
+- **Claud3** — a Claude-API bot living in the channel (n8n); games framework with `/trivia`.
 
 ## Layout
-- `index.html` / `app.js` / `styles.css` — the room
-- `gang.js` — the five members + Claud3 roster
-- `gate.js` — members-only passcode gate
-- `config.example.js` → copy to `config.js` and fill in
-- `supabase/schema.sql` — DB table + RLS + realtime
-- `n8n/claud3-workflow.json` — Claud3's brain (reference export)
-- `CONNECT.md` — one-time setup (≈5 min)
+- `index.html` — built single-file web app (from `build-single.py`; **rebuild after editing
+  `config.js`/`gang.js`/`gate.js`/`app.js`/`styles.css`**). Visible build stamp confirms version.
+- `knock/` — the `/knock` Claude Code skill (cross-platform Node launcher `knock.mjs`).
+- `clubhouse-cli/` — the terminal client (`npm install && npm link` → `clubhouse`).
+- `supabase/` — `01` schema (run) + optional `02` broker / `03` RLS / `04` scores.
+- `n8n/claud3-workflow.json` — the Claud3 bot (built; activate per `CONNECT.md` §C).
+- `CONNECT.md` — operator runbook · `MORNING-HANDOFF.md` — current status & next steps.
 
-## Status
-Built 2026-06-18. Goes live once `CONNECT.md` is completed (Supabase project + keys).
+## Identity
+`~/.config/clubhouse/profile.json` = `{"nick":"…","secret":"…"}`. Nicks: Copeland (Matt),
+Weintz (Brent), Marcil (Mike), Neirgarth (Natalie), Ramsey (Brooke).
+
+🌲 Outstanding Alone. Better Together.
