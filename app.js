@@ -1,6 +1,10 @@
 // Claude Code Gang Clubhouse — frontend app
 const $ = (s) => document.querySelector(s);
 
+// Declared up top: /knock auto-entry runs during page load and connects Supabase before
+// the section below would otherwise initialize these (temporal-dead-zone bug otherwise).
+let sb, channel, ME;
+
 // ---- gate ----
 GANG.forEach(g => {
   const o = document.createElement("option");
@@ -83,7 +87,6 @@ function startClubhouse(nick) {
 }
 
 // ---- supabase ----
-let sb, channel, ME;
 function connectSupabase(me) {
   ME = me;
   sb = supabase.createClient(CLUBHOUSE_CONFIG.SUPABASE_URL, CLUBHOUSE_CONFIG.SUPABASE_ANON_KEY);
