@@ -5,4 +5,7 @@ window.CLUBHOUSE_CONFIG = {
   SUPABASE_ANON_KEY: "YOUR-ANON-PUBLIC-KEY",
   ROOM_SLUG: "claude-code-gang",
   PASSCODE_HASH: "REPLACE_WITH_SHA256_HEX",
+  // n8n webhook that verifies a /knock code server-side. Leave as placeholder to accept
+  // any knock from a known nick (velvet rope); set it to turn the door into a real lock.
+  KNOCK_VERIFY_URL: "REPLACE_WITH_N8N_KNOCK_VERIFY_URL",
 };

@@ -7,4 +7,6 @@ window.CLUBHOUSE_CONFIG = {
   ROOM_SLUG: "claude-code-gang",
   // sha-256 hex of the shared club passcode (CONNECT.md shows how to generate this)
   PASSCODE_HASH: "REPLACE_WITH_SHA256_HEX",
+  // n8n webhook that verifies a /knock code server-side (CONNECT.md §E)
+  KNOCK_VERIFY_URL: "REPLACE_WITH_N8N_KNOCK_VERIFY_URL",
 };

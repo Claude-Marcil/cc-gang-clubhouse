@@ -14,6 +14,32 @@ if (lastNick) $("#nickPick").value = lastNick;
 $("#enterBtn").addEventListener("click", enter);
 $("#passInput").addEventListener("keydown", e => { if (e.key === "Enter") enter(); });
 
+// ---- /knock auto-entry (terminal-only door) ----
+// If the page was opened by the `/knock` CLI command, it carries #nick=&code=.
+// Verify server-side (n8n) when configured; otherwise accept any knock from a known nick.
+(async function checkKnock() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  const nick = h.get("nick"), code = h.get("code");
+  if (!nick || !code) return;                       // normal visit → show the gate
+  if (!GANG.find(g => g.nick === nick)) return;     // unknown nick → no entry
+  const verifyUrl = window.CLUBHOUSE_CONFIG.KNOCK_VERIFY_URL;
+  let ok = !verifyUrl || verifyUrl.startsWith("REPLACE_"); // velvet rope until verifier wired
+  if (!ok) {
+    try {
+      const r = await fetch(verifyUrl, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nick, code }),
+      });
+      ok = (await r.json())?.ok === true;
+    } catch (e) { ok = false; }
+  }
+  if (!ok) return;                                  // bad knock → fall through to gate
+  history.replaceState(null, "", location.pathname); // strip the code from the URL bar
+  localStorage.setItem("cc_nick", nick);
+  $("#gate").hidden = true; $("#app").hidden = false;
+  startClubhouse(nick);
+})();
+
 async function enter() {
   const nick = $("#nickPick").value;
   if (!(await passcodeOk($("#passInput").value))) { $("#gateErr").hidden = false; return; }

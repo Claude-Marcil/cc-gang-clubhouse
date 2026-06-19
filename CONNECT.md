@@ -58,5 +58,22 @@ Already built (inactive) in your n8n: **`Claud3 — Clubhouse Bot`**
 
 ---
 
-## D. Tell the gang
-Share the URL + passcode with the five. That's it. 🌲
+## E. The `/knock` door (terminal-only entry — replaces the passcode)
+
+The clubhouse is meant to be entered from the CLI: each gang member runs **`/knock`** in
+Claude Code and the browser opens straight into the room as them. See `knock/README.md`
+for install. The web already auto-enters on a valid knock.
+
+To turn the door from a velvet rope into a real lock, wire the n8n knock-verifier:
+
+1. Build a tiny n8n workflow `Clubhouse — Knock Verify`: a **Webhook (POST)** → **Code**
+   node that recomputes `HMAC-SHA256(CLUBHOUSE_SECRET, window)` for the current and previous
+   5-min window (`window = floor(now/300)`), compares the first 12 hex chars to the posted
+   `code`, and responds `{ "ok": true|false }`. Add an n8n Variable `CLUBHOUSE_SECRET` =
+   the same shared secret that's in each member's `~/.config/clubhouse/profile.json`.
+2. Put that webhook's production URL into `config.js` → `KNOCK_VERIFY_URL`. Commit + push.
+3. Now only CLI-minted knocks open the door. (Claude can build this workflow for you —
+   just ask: "build the knock verifier.")
+
+## F. Tell the gang
+Share the URL + the install (`knock/README.md`) with the five. They `/knock` to get in. 🌲
